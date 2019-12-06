@@ -28,7 +28,7 @@ static float yAngle = 0;
 
 static bool keyStates[256] = {0};
 static float moveSens = 30;
-static float mouseSens = 0.5;
+static float mouseSens = 0.8;
 
 static void on_display(void);
 static void on_keyboard(unsigned char key, int x, int y);
@@ -36,6 +36,25 @@ static void on_reshape(int width, int height);
 static void on_timer(int value);
 static void on_mouse_motion(int x, int y);
 
+
 void drawAxes();
+void drawWalls();
+void drawCrosshair();
+
+/* Bitmapa */
+GLubyte crosshair[24] = {
+   	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+    0xff, 0xf0, /* 1111 1111 1111 0000 */
+    0xff, 0xf0, /* 1111 1111 1111 0000 */
+    0xff, 0xf0, /* 1111 1111 1111 0000 */
+    0xff, 0xf0, /* 1111 1111 1111 0000 */
+   	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+	0x0f, 0x00,	/* 0000 1111 0000 0000 */
+};
 
 #endif
