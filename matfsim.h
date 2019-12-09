@@ -3,6 +3,8 @@
 
 #define pi 3.141592653589793
 
+#define TIMER_ID_MOV 0
+
 static int window_width, window_height;
 
 static float camPosX = 0.0;
@@ -17,29 +19,37 @@ static float camUpX = 0;
 static float camUpY = 1;
 static float camUpZ = 0;
 
-static float kx = -1;
+static float kx = 1;
 static float ky = 0;
-static float kz = -1;
+static float kz = 0;
 static float xzlen = 0;
 
 // uglovi rotacije oko x i y ose
-static float xAngle = 180;
+static float xAngle = 90;
 static float yAngle = 0;
 
+static float limbAngle = 0;
+static float limbSpeed = 6;
+static float limbMaxAngle = 40;
+static int limbSign = 1;
+
 static bool keyStates[256] = {0};
-static float moveSens = 30;
+static float moveSens = 0.06;
 static float mouseSens = 0.8;
 
 static void on_display(void);
 static void on_keyboard(unsigned char key, int x, int y);
+static void on_keyboard_up(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
-static void on_timer(int value);
+static void on_move(int value);
 static void on_mouse_motion(int x, int y);
 
+bool moving = 0;
 
 void drawAxes();
 void drawWalls();
 void drawCrosshair();
+void drawStudent();
 
 /* Bitmapa */
 GLubyte crosshair[24] = {
