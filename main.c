@@ -4,6 +4,22 @@
 #include <math.h>
 #include <GL/glut.h>
 #include "matfsim.h"
+#include "light.h"
+
+GLuint stolice;
+
+static void initStolice(){
+	stolice = glGenLists(1);
+
+	glNewList(stolice, GL_COMPILE);
+		glColor3f(0, 0, 0);
+		glPushMatrix();
+			glScalef(0.05, 0.25, 0.05);
+			glutSolidCube(1);
+		glPopMatrix();
+		glTranslatef(0.2, 0, 0);
+	glEndList();
+}
 
 int main(int argc, char **argv){
 	glutInit(&argc, argv);
@@ -20,6 +36,8 @@ int main(int argc, char **argv){
 	glutKeyboardUpFunc(on_keyboard_up);
 	glutReshapeFunc(on_reshape);
 	glutPassiveMotionFunc(on_mouse_motion);
+
+	initStolice();
 
 	glClearColor(0.6, 0.6, 0.6, 0);
 	glEnable(GL_DEPTH_TEST);
@@ -40,10 +58,18 @@ static void on_move(int value){
 	limbAngle += limbSign*limbSpeed; 
 
 	if(keyStates['w']){
+		//printf("on move w\n");
 		/* necemo da nam brzina kretanja zavisi od y ose*/
 		xzlen = sqrt(kz*kz+kx*kx);
 		camPosX += kx/xzlen*moveSens;
 		camPosZ += kz/xzlen*moveSens;
+	}
+
+	if(keyStates['s']){
+		//printf("on move s\n");
+		xzlen = sqrt(kz*kz+kx*kx);
+		camPosX -= kx/xzlen*moveSens;
+		camPosZ -= kz/xzlen*moveSens;
 	}
 
 	glutPostRedisplay();
@@ -90,14 +116,24 @@ static void on_keyboard(unsigned char key, int x, int y){
         	break;
 		case 'w':
 		case 'W':
+			//printf("on keyb w\n");
 			keyStates['w'] = true;
 			if(!moving){
 				moving = true;
 				glutTimerFunc(30, on_move, TIMER_ID_MOV);
 			}
-
 			break;
 		
+		case 's':
+		case 'S':
+			//printf("on keyboard s\n");
+			keyStates['s'] = true;
+			if(!moving){
+				moving = true;
+				glutTimerFunc(30, on_move, TIMER_ID_MOV);
+			}
+			break;
+
 		default:
 			break;
     }
@@ -109,6 +145,7 @@ static void on_keyboard_up(unsigned char key, int x, int y){
     switch (key) {
 		case 'w':
 		case 'W':
+			//printf("key up w\n");
 			keyStates['w'] = false;
 			/* ovo se ne izvrsava kada bi trebalo */
 			/* on_move se izvrsi jednom posle pustanja w */
@@ -116,7 +153,12 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 			//limbAngle = 0;
 			moving = false;
 			break;
-		
+		case 's':
+		case 'S':
+			//printf("key up s\n");
+			keyStates['s'] = false;
+			moving = false;
+			break;
 		default:
 			break;
     }
@@ -149,10 +191,24 @@ static void on_display(void){
 			  camPosX + kx, camPosY + ky, camPosZ + kz,	// ref point xyz
 			  camUpX, camUpY, camUpZ);					// up vector
 
+	initLights();
+	setMaterial();
+
+	glEnable(GL_COLOR_MATERIAL);
+
 	drawAxes();
 	drawWalls();
 	drawStudent();
+	
+	GLuint i;
+	for(i = 0; i<=5; i++){
+		glCallList(stolice);
+	}
+
+	glDisable(GL_LIGHTING);
 	drawCrosshair();
+	glEnable(GL_LIGHTING);
+	
 
 	/* ovo radi kako treba ovde, neka ga */
 	glutWarpPointer(window_width/2, window_height/2);
@@ -180,8 +236,8 @@ void drawAxes(){
 };
 
 void drawWalls(){
-
-	glColor3f(0.2, 0.2, 0.2);
+	/* zadnji zid */
+	glColor3f(0.2, 1, 0.2);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 		glVertex3f(-3, 0, 2);
@@ -189,7 +245,7 @@ void drawWalls(){
 		glVertex3f(-3, 2, -2);
 		glVertex3f(-3, 2, 2);
 	glEnd();
-	
+	/* levi zid */
 	glColor3f(0.3, 0.3, 0.3);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
@@ -198,7 +254,7 @@ void drawWalls(){
 		glVertex3f(2, 2, -2);
 		glVertex3f(-3, 2, -2);
 	glEnd();
-
+	/* prednji zid */
 	glColor3f(0.4, 0.4, 0.4);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
@@ -207,7 +263,7 @@ void drawWalls(){
 		glVertex3f(2, 2, 2);
 		glVertex3f(2, 0, 2);
 	glEnd();
-
+	/* desni zid */
 	glColor3f(0.1, 0.1, 0.1);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
@@ -216,7 +272,7 @@ void drawWalls(){
 		glVertex3f(0.75, 2, 2);
 		glVertex3f(-3, 2, 2);
 	glEnd();
-
+	/* mali zid do vrata */
 	glColor3f(0.5, 0.5, 0.5);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
@@ -225,7 +281,7 @@ void drawWalls(){
 		glVertex3f(2, 2, 2);
 		glVertex3f(1.5, 2, 2);
 	glEnd();
-
+	/* mali zid iznad vrata */
 	glColor3f(0.0, 0.0, 0.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
@@ -236,7 +292,8 @@ void drawWalls(){
 	glEnd();
 	/* pod */
 	glColor3f(1, 1, 1);
-    glBegin(GL_QUADS);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_POLYGON);
             glVertex3f(5, 0, -5);
             glVertex3f(-5, 0, -5);
             glVertex3f(-5, 0, 5);
@@ -266,9 +323,16 @@ void drawCrosshair(){
 void drawStudent(){
 	/* kad pustimo w udovi se nekad ne vrate na pocetnu poziciju */
 	/* ovo to resava */
-	if(!keyStates['w']){
+	if(!keyStates['w'] && !keyStates['s']){
 		limbAngle = 0;
 	}
+
+	/* kolizija */
+	if(camPosX >= 1.9) camPosX -= 0.05;
+	else if(camPosX <= -2.9) camPosX += 0.05;
+	else if(camPosZ >= 1.9) camPosZ -=  0.05;
+	else if(camPosZ <= -1.9) camPosZ += 0.05;
+
 	glPushMatrix();
 		glTranslatef(camPosX, 0, camPosZ);
 		glRotatef(-yAngle, 0, 1, 0);
@@ -308,7 +372,7 @@ void drawStudent(){
 			glScalef(0.1, 0.5, 0.069);
 			glutSolidCube(1);
 		glPopMatrix();
-
+		/* trup */
 		glPushMatrix();	
 			glColor3f(0.6, 0.6, 0.6);
 			glTranslatef(-0.1, 0.75, 0);

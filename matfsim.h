@@ -11,9 +11,11 @@ static float camPosX = 0.0;
 static float camPosY = 1.0;
 static float camPosZ = 0.0;
 
+/* not used
 static float camCenterX = 0.0;
 static float camCenterY = 0.0;
 static float camCenterZ = 0.0;
+*/
 
 static float camUpX = 0;
 static float camUpY = 1;
