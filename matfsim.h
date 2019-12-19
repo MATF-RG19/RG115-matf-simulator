@@ -2,6 +2,7 @@
 #define _MATFSIM_H
 
 #define pi 3.141592653589793
+#define MAX_STOLICA 18
 
 #define TIMER_ID_MOV 0
 
@@ -38,6 +39,7 @@ static int limbSign = 1;
 static bool keyStates[256] = {0};
 static float moveSens = 0.06;
 static float mouseSens = 0.8;
+static float bobSens = 0.0001;
 
 static void on_display(void);
 static void on_keyboard(unsigned char key, int x, int y);
@@ -45,13 +47,30 @@ static void on_keyboard_up(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
 static void on_move(int value);
 static void on_mouse_motion(int x, int y);
+static void on_mouse(int button, int state, int x, int y);
 
-bool moving = 0;
+bool moving = false;
+bool carrying = true; // zakucano zbog testiranja
 
 void drawAxes();
 void drawWalls();
 void drawCrosshair();
 void drawStudent();
+void drawChairs();
+void drawMovedChairs();
+
+int brMoved = 0;
+int idStolice;
+float xS, zS;
+
+typedef struct Stolica{
+	int yAngle, xPos, zPos;	
+	bool moved;
+	bool isCarried;
+}Stolica;
+
+Stolica stolice[MAX_STOLICA];
+Stolica movedChairs[MAX_STOLICA];
 
 /* Bitmapa */
 GLubyte crosshair[24] = {

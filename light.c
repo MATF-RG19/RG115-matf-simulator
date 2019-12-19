@@ -4,16 +4,16 @@
 void initLights()
 {
     /* Pozicija svetla (u pitanju je direkcionalno svetlo). */
-    GLfloat light_position[] = { 0, 3, 0, 0 };
+    GLfloat light_position[] = { 1.5, 1.5, 1.5, 0 };
 
     /* Ambijentalna boja svetla. */
-    GLfloat light_ambient[] = { 0.2, 0.2, 0.9, 1 };
+    GLfloat light_ambient[] = { 0.2, 0.2, 0.2, 1 };
 
     /* Difuzna boja svetla. */
-    GLfloat light_diffuse[] = { 0.3, 0.9, 0.3, 1 };
+    GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
 
     /* Spekularna boja svetla. */
-    GLfloat light_specular[] = { 0.9, 0.5, 0.5, 1 };
+    GLfloat light_specular[] = { 0.5, 0.5, 0.5, 1 };
 
     /* Ukljucuje se osvjetljenje i podesavaju parametri svetla. */
     glEnable(GL_LIGHTING);
@@ -33,14 +33,15 @@ void setMaterial()
     GLfloat diffuse_coeffs[] = { 0.4, 0.4, 0.4, 1 };
 
     /* Koeficijenti spekularne refleksije materijala. */
-    GLfloat specular_coeffs[] = { 1, 1, 1, 1 };
+    //GLfloat specular_coeffs[] = { 1, 1, 1, 1 };
 
     /* Koeficijent glatkosti materijala. */
-    GLfloat shininess = 30;
+    GLfloat shininess = 1;
 
     /* Podesavaju se parametri materijala. */
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffs);
+   	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffs);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffs);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+    /* sve treperi kad radi specular */
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }

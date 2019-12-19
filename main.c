@@ -6,12 +6,12 @@
 #include "matfsim.h"
 #include "light.h"
 
-GLuint stolice;
+GLuint listaStolica;
 
 static void initStolice(){
-	stolice = glGenLists(1);
+	listaStolica = glGenLists(1);
 
-	glNewList(stolice, GL_COMPILE);
+	glNewList(listaStolica, GL_COMPILE);
 		glColor3f(0, 0, 0);
 		glPushMatrix();
 			/* 4 noge */
@@ -37,14 +37,14 @@ static void initStolice(){
 			glPopMatrix();
 			/* whtevs */
 			glPushMatrix();
-				glColor3f(0.5, 0.3, 0.3);
+				glColor3f(0.4, 0.15, 0.1);
 				glTranslatef(0, 0.251, 0);
 				glScalef(0.17, 0.01, 0.17);
 				glutSolidCube(1);
 			glPopMatrix();
 			/* naslon */
 			glPushMatrix();
-				glColor3f(0.5, 0.3, 0.3);
+				glColor3f(0.4, 0.15, 0.1);
 				glTranslatef(-0.065, 0.4125, 0);
 				glScalef(0.01, 0.125, 0.17);
 				glutSolidCube(1);
@@ -69,6 +69,7 @@ int main(int argc, char **argv){
 	glutKeyboardUpFunc(on_keyboard_up);
 	glutReshapeFunc(on_reshape);
 	glutPassiveMotionFunc(on_mouse_motion);
+	glutMouseFunc(on_mouse);
 
 	initStolice();
 
@@ -96,6 +97,7 @@ static void on_move(int value){
 		xzlen = sqrt(kz*kz+kx*kx);
 		camPosX += kx/xzlen*moveSens;
 		camPosZ += kz/xzlen*moveSens;
+		camPosY += limbAngle*bobSens;
 	}
 
 	if(keyStates['s']){
@@ -103,12 +105,38 @@ static void on_move(int value){
 		xzlen = sqrt(kz*kz+kx*kx);
 		camPosX -= kx/xzlen*moveSens;
 		camPosZ -= kz/xzlen*moveSens;
+		camPosY += limbAngle*bobSens;
 	}
 
 	glutPostRedisplay();
 
 	if(moving)
 		glutTimerFunc(30, on_move, value);
+}
+
+/* TODO */
+static void on_mouse(int button, int state, int x, int y){
+	switch (button)	{
+	case GLUT_LEFT_BUTTON:
+		if(state == GLUT_DOWN){
+			/* proveri da li je neka stolica dovoljno blizu za uzimanje */
+			/* ako jeste namesti studenta da nosi ako ne nista */
+			/* ako stolica nije moved onda brMoved++ i stolica.moved = true */
+			/* jos nesto??? */
+			// glutPostRedisplay();
+		}else{
+			/* spusti stolicu */
+
+			/* update xpos zpos yangle stolice u odnosu na studenta */	
+			/* dodaj stolicu u movedChairs niz */
+			/* jos nesto??? */
+			// glutPostRedisplay();
+		}
+		break;
+	
+	default:
+		break;
+	}
 }
 
 static void on_mouse_motion(int x, int y){
@@ -192,6 +220,10 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 			keyStates['s'] = false;
 			moving = false;
 			break;
+		/* TODO sedi */
+		case 'e':
+		case 'E':
+			break;
 		default:
 			break;
     }
@@ -232,21 +264,8 @@ static void on_display(void){
 	drawAxes();
 	drawWalls();
 	drawStudent();
-	
-	GLuint i, j;
-	glPushMatrix();
-		glTranslatef(1.5, 0, -1.5);
-		for(j = 0; j < 3; j++){
-			glTranslatef(-1, 0, 0);
-			glDisable(GL_LIGHTING);
-			for(i = 0; i < 6; i++){
-				glCallList(stolice);
-				glTranslatef(0, 0, 0.4);
-			}
-			glTranslatef(0, 0, -2.4);
-			glEnable(GL_LIGHTING);
-		}
-	glPopMatrix();
+	drawChairs();
+	// TODO drawMovedChairs();
 
 	glDisable(GL_LIGHTING);
 	drawCrosshair();
@@ -257,6 +276,50 @@ static void on_display(void){
 	glutWarpPointer(window_width/2, window_height/2);
 	glutPostRedisplay();
 	glutSwapBuffers();
+}
+
+void drawMovedChairs(){
+	GLuint i;
+	for(i = 0; i < brMoved; i++){
+		if(!movedChairs[i].isCarried){
+			glPushMatrix();
+				glRotatef(movedChairs[i].yAngle, 0, 1, 0);
+				glTranslatef(movedChairs[i].xPos, 0, movedChairs[i].zPos);
+				//glDisable(GL_LIGHTING);
+				glCallList(listaStolica);
+				//glEnable(GL_LIGHTING);
+			glPopMatrix();
+		}
+	}
+}
+
+void drawChairs(){
+	GLuint i, j;
+	glPushMatrix();
+		glTranslatef(1.5, 0, -1.5);
+		xS = 1.5;
+		zS = -1.5;
+		for(j = 0; j < 3; j++){
+			glTranslatef(-1, 0, 0);
+			xS -= 1;
+			//glDisable(GL_LIGHTING);
+			for(i = 0; i < 6; i++){
+				idStolice = i + j * 6;
+				
+				if(!stolice[idStolice].moved){
+					glCallList(listaStolica);
+					stolice[idStolice].xPos = xS;
+					stolice[idStolice].zPos = zS;
+					//printf("%f %f\n", xS, zS);
+				}
+				glTranslatef(0, 0, 0.4);
+				zS += 0.4;
+			}
+			glTranslatef(0, 0, -2.4);
+			zS -= 2.4;
+			//glEnable(GL_LIGHTING);
+		}
+	glPopMatrix();
 }
 
 void drawAxes(){
@@ -368,6 +431,7 @@ void drawStudent(){
 	/* ovo to resava */
 	if(!keyStates['w'] && !keyStates['s']){
 		limbAngle = 0;
+		//camPosY = 1; 
 	}
 
 	/* kolizija */
@@ -379,24 +443,51 @@ void drawStudent(){
 	glPushMatrix();
 		glTranslatef(camPosX, 0, camPosZ);
 		glRotatef(-yAngle, 0, 1, 0);
-		/* desna ruka */
-		glPushMatrix();
-			glColor3f(0.3, 0.3, 0.3);
-			glTranslatef(-0.1, 0.95, 0.1);
-			glRotatef(-limbAngle, 0, 0, 1);
-			glTranslatef(0, -0.2, 0);
-			glScalef(0.05, 0.4, 0.05);
-			glutSolidCube(1);
-		glPopMatrix();
-		/* leva ruka */
-		glPushMatrix();
-			glColor3f(0.3, 0.3, 0.3);
-			glTranslatef(-0.1, 0.95, -0.1);
-			glRotatef(limbAngle, 0, 0, 1);
-			glTranslatef(0, -0.2, 0);
-			glScalef(0.05, 0.4, 0.05);
-			glutSolidCube(1);
-		glPopMatrix();
+		if(carrying){
+			/* desna ruka */
+			glPushMatrix();
+				glColor3f(0.3, 0.3, 0.3);
+				glTranslatef(-0.1, 0.95, 0.1);
+				glRotatef(60, 0, 0, 1);
+				glTranslatef(0, -0.2, 0);
+				glScalef(0.05, 0.4, 0.05);
+				glutSolidCube(1);
+			glPopMatrix();
+			/* leva ruka */
+			glPushMatrix();
+				glColor3f(0.3, 0.3, 0.3);
+				glTranslatef(-0.1, 0.95, -0.1);
+				glRotatef(60, 0, 0, 1);
+				glTranslatef(0, -0.2, 0);
+				glScalef(0.05, 0.4, 0.05);
+				glutSolidCube(1);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(0.25, 0.33, 0);
+				//glDisable(GL_LIGHTING);
+				glCallList(listaStolica);
+				//glEnable(GL_LIGHTING);
+			glPopMatrix();
+			}else{
+			/* desna ruka */
+			glPushMatrix();
+				glColor3f(0.3, 0.3, 0.3);
+				glTranslatef(-0.1, 0.95, 0.1);
+				glRotatef(-limbAngle, 0, 0, 1);
+				glTranslatef(0, -0.2, 0);
+				glScalef(0.05, 0.4, 0.05);
+				glutSolidCube(1);
+			glPopMatrix();
+			/* leva ruka */
+			glPushMatrix();
+				glColor3f(0.3, 0.3, 0.3);
+				glTranslatef(-0.1, 0.95, -0.1);
+				glRotatef(limbAngle, 0, 0, 1);
+				glTranslatef(0, -0.2, 0);
+				glScalef(0.05, 0.4, 0.05);
+				glutSolidCube(1);
+			glPopMatrix();
+		}
 		/* desna noga */
 		glPushMatrix();
 			glColor3f(0.2, 0.2, 0.2);
