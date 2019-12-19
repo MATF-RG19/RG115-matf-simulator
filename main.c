@@ -14,10 +14,43 @@ static void initStolice(){
 	glNewList(stolice, GL_COMPILE);
 		glColor3f(0, 0, 0);
 		glPushMatrix();
-			glScalef(0.05, 0.25, 0.05);
-			glutSolidCube(1);
+			/* 4 noge */
+			glPushMatrix();
+				glTranslatef(-0.074, 0.25, -0.074);
+				glScalef(0.02, 0.5, 0.02);
+				glutSolidCube(1);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(0.074, 0.125, -0.074);
+				glScalef(0.02, 0.25, 0.02);
+				glutSolidCube(1);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(0.074, 0.125, 0.074);
+				glScalef(0.02, 0.25, 0.02);
+				glutSolidCube(1);
+			glPopMatrix();
+			glPushMatrix();
+				glTranslatef(-0.074, 0.25, 0.074);
+				glScalef(0.02, 0.5, 0.02);
+				glutSolidCube(1);
+			glPopMatrix();
+			/* whtevs */
+			glPushMatrix();
+				glColor3f(0.5, 0.3, 0.3);
+				glTranslatef(0, 0.251, 0);
+				glScalef(0.17, 0.01, 0.17);
+				glutSolidCube(1);
+			glPopMatrix();
+			/* naslon */
+			glPushMatrix();
+				glColor3f(0.5, 0.3, 0.3);
+				glTranslatef(-0.065, 0.4125, 0);
+				glScalef(0.01, 0.125, 0.17);
+				glutSolidCube(1);
+			glPopMatrix();
 		glPopMatrix();
-		glTranslatef(0.2, 0, 0);
+		
 	glEndList();
 }
 
@@ -200,10 +233,20 @@ static void on_display(void){
 	drawWalls();
 	drawStudent();
 	
-	GLuint i;
-	for(i = 0; i<=5; i++){
-		glCallList(stolice);
-	}
+	GLuint i, j;
+	glPushMatrix();
+		glTranslatef(1.5, 0, -1.5);
+		for(j = 0; j < 3; j++){
+			glTranslatef(-1, 0, 0);
+			glDisable(GL_LIGHTING);
+			for(i = 0; i < 6; i++){
+				glCallList(stolice);
+				glTranslatef(0, 0, 0.4);
+			}
+			glTranslatef(0, 0, -2.4);
+			glEnable(GL_LIGHTING);
+		}
+	glPopMatrix();
 
 	glDisable(GL_LIGHTING);
 	drawCrosshair();
