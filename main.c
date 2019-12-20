@@ -55,6 +55,7 @@ static void initStolice(){
 }
 
 int main(int argc, char **argv){
+	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
@@ -115,25 +116,58 @@ static void on_move(int value){
 }
 
 /* TODO */
+/* ne moze da se pomera kursor dok je pritisnuto dugme */
 static void on_mouse(int button, int state, int x, int y){
+	GLuint i;
 	switch (button)	{
 	case GLUT_LEFT_BUTTON:
 		if(state == GLUT_DOWN){
-			/* proveri da li je neka stolica dovoljno blizu za uzimanje */
-			/* ako jeste namesti studenta da nosi ako ne nista */
-			/* ako stolica nije moved onda brMoved++ i stolica.moved = true */
-			/* jos nesto??? */
-			// glutPostRedisplay();
-		}else{
-			/* spusti stolicu */
-
-			/* update xpos zpos yangle stolice u odnosu na studenta */	
-			/* dodaj stolicu u movedChairs niz */
-			/* jos nesto??? */
-			// glutPostRedisplay();
+			/* kopirano iz keyboard down case p */
+			for(i = 0; i < MAX_STOLICA; i++){
+				sx = stolice[i].xPos;
+				sz = stolice[i].zPos;
+				rastojanje = sqrt((sx-camPosX)*(sx-camPosX)+(sz-camPosZ)*(sz-camPosZ));
+				//printf("%d. %f\n", i, rastojanje);
+				
+				/* ako jeste namesti studenta da nosi ako ne nista */
+				if(rastojanje < dovoljnaBlizina){
+					/* plus provera da li je stolica ispred studenta
+					ugao izmedju kx+kz vektora kamere i pos stolice minus pos studenta   */
+					smsx = sx-camPosX;
+					smsz = sz-camPosZ;
+					ugao = acos((smsx*kx+smsz*kz)/(sqrt(kz*kz+kx*kx)*sqrt(smsx*smsx+smsz*smsz)));
+					//printf("%f %f\n", ugao, dovoljniUgao);
+					if(ugao < dovoljniUgao){
+						/* ako stolica nije moved onda brMoved++ i stolica.moved = true */
+						if(!stolice[i].moved){
+							brMoved++;
+							stolice[i].moved = true;
+						}
+						stolice[i].isCarried = true;
+						carried = i;
+						carrying = true;
+						break;
+					}
+				}
+			}
+			glutPostRedisplay();
+		}else if(state == GLUT_UP){
+			if(carrying){
+				/* kopirano iz keyboard up case p */
+				xzlen = sqrt(kz*kz+kx*kx);
+				stolice[carried].xPos = camPosX + kx/xzlen*kolikoIspredDaSpusti;
+				stolice[carried].zPos = camPosZ + kz/xzlen*kolikoIspredDaSpusti;
+				stolice[carried].yAngle = -yAngle;
+				stolice[carried].isCarried = false;
+				//printf("%f, %f, %f \n", stolice[carried].xPos, stolice[carried].zPos, stolice[carried].yAngle);
+				//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
+				carrying = false;
+				carried = -1;
+				glutPostRedisplay();
+			}
 		}
 		break;
-	
+
 	default:
 		break;
 	}
@@ -171,6 +205,7 @@ static void on_mouse_motion(int x, int y){
 }
 
 static void on_keyboard(unsigned char key, int x, int y){
+	GLuint i;
     switch (key) {
     	case 27:
         	exit(0);
@@ -194,7 +229,37 @@ static void on_keyboard(unsigned char key, int x, int y){
 				glutTimerFunc(30, on_move, TIMER_ID_MOV);
 			}
 			break;
-
+		case 'p':
+		case 'P':
+			for(i = 0; i < MAX_STOLICA; i++){
+				sx = stolice[i].xPos;
+				sz = stolice[i].zPos;
+				rastojanje = sqrt((sx-camPosX)*(sx-camPosX)+(sz-camPosZ)*(sz-camPosZ));
+				//printf("%d. %f\n", i, rastojanje);
+				
+				/* ako jeste namesti studenta da nosi ako ne nista */
+				if(rastojanje < dovoljnaBlizina){
+					/* plus provera da li je stolica ispred studenta
+					ugao izmedju kx+kz vektora kamere i pos stolice minus pos studenta   */
+					smsx = sx-camPosX;
+					smsz = sz-camPosZ;
+					ugao = acos((smsx*kx+smsz*kz)/(sqrt(kz*kz+kx*kx)*sqrt(smsx*smsx+smsz*smsz)));
+					//printf("%f %f\n", ugao, dovoljniUgao);
+					if(ugao < dovoljniUgao){
+						/* ako stolica nije moved onda brMoved++ i stolica.moved = true */
+						if(!stolice[i].moved){
+							brMoved++;
+							stolice[i].moved = true;
+						}
+						stolice[i].isCarried = true;
+						carried = i;
+						carrying = true;
+						break;
+					}
+				}
+			}
+			glutPostRedisplay();
+			break;
 		default:
 			break;
     }
@@ -223,6 +288,26 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 		/* TODO sedi */
 		case 'e':
 		case 'E':
+			break;
+		case 'p':
+		case 'P':
+			/* spusti stolicu */
+			//printf("%d\n", carried);
+			/* update xpos zpos yangle stolice u odnosu na studenta */	
+			/* dodaj stolicu u movedChairs niz */
+			if(carrying){
+				xzlen = sqrt(kz*kz+kx*kx);
+				stolice[carried].xPos = camPosX + kx/xzlen*kolikoIspredDaSpusti;
+				stolice[carried].zPos = camPosZ + kz/xzlen*kolikoIspredDaSpusti;
+				stolice[carried].yAngle = -yAngle;
+				stolice[carried].isCarried = false;
+				//movedChairs[brMoved-1] = &stolice[carried];
+				//printf("%f, %f, %f \n", stolice[carried].xPos, stolice[carried].zPos, stolice[carried].yAngle);
+				//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
+				carrying = false;
+				carried = -1;
+				glutPostRedisplay();
+			}
 			break;
 		default:
 			break;
@@ -265,7 +350,7 @@ static void on_display(void){
 	drawWalls();
 	drawStudent();
 	drawChairs();
-	// TODO drawMovedChairs();
+	drawMovedChairs();
 
 	glDisable(GL_LIGHTING);
 	drawCrosshair();
@@ -280,20 +365,25 @@ static void on_display(void){
 
 void drawMovedChairs(){
 	GLuint i;
-	for(i = 0; i < brMoved; i++){
-		if(!movedChairs[i].isCarried){
-			glPushMatrix();
-				glRotatef(movedChairs[i].yAngle, 0, 1, 0);
-				glTranslatef(movedChairs[i].xPos, 0, movedChairs[i].zPos);
-				//glDisable(GL_LIGHTING);
-				glCallList(listaStolica);
-				//glEnable(GL_LIGHTING);
-			glPopMatrix();
+	for(i = 0; i < MAX_STOLICA; i++){
+		//printf("%f, %f, %f \n", movedChairs[i].xPos, movedChairs[i].zPos, movedChairs[i].yAngle);
+		//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
+		if(stolice[i].moved){
+			if(!stolice[i].isCarried){
+				glPushMatrix();
+					glTranslatef(stolice[i].xPos, 0, stolice[i].zPos);
+					glRotatef(stolice[i].yAngle, 0, 1, 0);
+					//glDisable(GL_LIGHTING);
+					glCallList(listaStolica);
+					//glEnable(GL_LIGHTING);
+				glPopMatrix();
+			}
 		}
 	}
 }
 
 void drawChairs(){
+	/* inicijalizujemo structs dok crtamo */
 	GLuint i, j;
 	glPushMatrix();
 		glTranslatef(1.5, 0, -1.5);
@@ -308,9 +398,10 @@ void drawChairs(){
 				
 				if(!stolice[idStolice].moved){
 					glCallList(listaStolica);
+					/* ovo se posle prvog puta izvrsava bez potrebe ali ok */
 					stolice[idStolice].xPos = xS;
 					stolice[idStolice].zPos = zS;
-					//printf("%f %f\n", xS, zS);
+					//printf("%d %f %f\n", idStolice, xS, zS);
 				}
 				glTranslatef(0, 0, 0.4);
 				zS += 0.4;
@@ -431,7 +522,7 @@ void drawStudent(){
 	/* ovo to resava */
 	if(!keyStates['w'] && !keyStates['s']){
 		limbAngle = 0;
-		//camPosY = 1; 
+		camPosY = 1; 
 	}
 
 	/* kolizija */

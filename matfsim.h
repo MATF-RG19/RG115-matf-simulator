@@ -50,7 +50,7 @@ static void on_mouse_motion(int x, int y);
 static void on_mouse(int button, int state, int x, int y);
 
 bool moving = false;
-bool carrying = true; // zakucano zbog testiranja
+bool carrying = false; 
 
 void drawAxes();
 void drawWalls();
@@ -59,18 +59,24 @@ void drawStudent();
 void drawChairs();
 void drawMovedChairs();
 
+static float dovoljnaBlizina = 0.3;
+static float dovoljniUgao = pi/8;
+
 int brMoved = 0;
 int idStolice;
 float xS, zS;
+int carried = -1;
+float rastojanje, ugao, sx, sz, smsx, smsz;
+float kolikoIspredDaSpusti = 0.15;
 
 typedef struct Stolica{
-	int yAngle, xPos, zPos;	
+	float yAngle, xPos, zPos;	
 	bool moved;
 	bool isCarried;
 }Stolica;
 
 Stolica stolice[MAX_STOLICA];
-Stolica movedChairs[MAX_STOLICA];
+Stolica* movedChairs[MAX_STOLICA];
 
 /* Bitmapa */
 GLubyte crosshair[24] = {
