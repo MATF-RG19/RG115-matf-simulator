@@ -3,8 +3,15 @@
 
 #define pi 3.141592653589793
 #define MAX_STOLICA 18
-
 #define TIMER_ID_MOV 0
+
+/* imena fajlova sa teksturama */
+#define FILENAME0 "wall.bmp"
+#define FILENAME1 "floor.bmp"
+#define FILENAME2 "tabla.bmp"
+
+/* identifikatori tekstura */
+static GLuint names[3];
 
 static int window_width, window_height;
 
@@ -41,6 +48,9 @@ static float moveSens = 0.06;
 static float mouseSens = 0.8;
 static float bobSens = 0.0001;
 
+static void initTex();
+static void initStolice();
+
 static void on_display(void);
 static void on_keyboard(unsigned char key, int x, int y);
 static void on_keyboard_up(unsigned char key, int x, int y);
@@ -49,9 +59,6 @@ static void on_move(int value);
 static void on_mouse_motion(int x, int y);
 static void on_mouse(int button, int state, int x, int y);
 
-bool moving = false;
-bool carrying = false; 
-
 void drawAxes();
 void drawWalls();
 void drawCrosshair();
@@ -59,8 +66,12 @@ void drawStudent();
 void drawChairs();
 void drawMovedChairs();
 
+/* ---------- ZA STOLICE ------------ */
 static float dovoljnaBlizina = 0.3;
 static float dovoljniUgao = pi/8;
+
+bool moving = false;
+bool carrying = false; 
 
 int brMoved = 0;
 int idStolice;
@@ -77,6 +88,7 @@ typedef struct Stolica{
 
 Stolica stolice[MAX_STOLICA];
 Stolica* movedChairs[MAX_STOLICA];
+/* ----------------------------------- */
 
 /* Bitmapa */
 GLubyte crosshair[24] = {

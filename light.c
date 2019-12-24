@@ -33,7 +33,7 @@ void setMaterial()
     GLfloat diffuse_coeffs[] = { 0.4, 0.4, 0.4, 1 };
 
     /* Koeficijenti spekularne refleksije materijala. */
-    //GLfloat specular_coeffs[] = { 1, 1, 1, 1 };
+    GLfloat specular_coeffs[] = { 1, 1, 1, 1 };
 
     /* Koeficijent glatkosti materijala. */
     GLfloat shininess = 1;
@@ -41,7 +41,6 @@ void setMaterial()
     /* Podesavaju se parametri materijala. */
    	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_coeffs);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_coeffs);
-    /* sve treperi kad radi specular */
-	//glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular_coeffs);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }

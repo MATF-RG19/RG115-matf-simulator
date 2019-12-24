@@ -5,6 +5,7 @@
 #include <GL/glut.h>
 #include "matfsim.h"
 #include "light.h"
+#include "image.h"
 
 GLuint listaStolica;
 
@@ -54,6 +55,76 @@ static void initStolice(){
 	glEndList();
 }
 
+static void initTex(){
+	/* Objekat koji predstavlja teskturu ucitanu iz fajla. */
+    Image * image;
+
+	/* Ukljucuju se teksture. */
+    glEnable(GL_TEXTURE_2D);
+
+    glTexEnvf(GL_TEXTURE_ENV,
+              GL_TEXTURE_ENV_MODE,
+              GL_REPLACE);
+
+	 /* Inicijalizuje se objekat koji ce sadrzati teksture ucitane iz fajla. */
+    image = image_init(0, 0);
+
+	/* Generisu se identifikatori tekstura. */
+	glGenTextures(2, names);
+    /* Kreira se prva tekstura. */
+
+    image_read(image, FILENAME0);
+
+	glBindTexture(GL_TEXTURE_2D, names[0]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+	
+	image_read(image, FILENAME1);
+
+	glBindTexture(GL_TEXTURE_2D, names[1]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+	
+	image_read(image, FILENAME2);
+
+	glBindTexture(GL_TEXTURE_2D, names[2]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, 
+					GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+
+	/* Iskljucujemo aktivnu teksturu */
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+	/* Unistava se objekat za citanje tekstura iz fajla. */
+    image_done(image);
+}
+
 int main(int argc, char **argv){
 	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
@@ -72,6 +143,7 @@ int main(int argc, char **argv){
 	glutPassiveMotionFunc(on_mouse_motion);
 	glutMouseFunc(on_mouse);
 
+	initTex();
 	initStolice();
 
 	glClearColor(0.6, 0.6, 0.6, 0);
@@ -229,8 +301,8 @@ static void on_keyboard(unsigned char key, int x, int y){
 				glutTimerFunc(30, on_move, TIMER_ID_MOV);
 			}
 			break;
-		case 'p':
-		case 'P':
+		case 'e':
+		case 'E':
 			for(i = 0; i < MAX_STOLICA; i++){
 				sx = stolice[i].xPos;
 				sz = stolice[i].zPos;
@@ -260,6 +332,10 @@ static void on_keyboard(unsigned char key, int x, int y){
 			}
 			glutPostRedisplay();
 			break;
+		/* TODO sedi */
+		case 'x':
+		case 'X':
+			break;
 		default:
 			break;
     }
@@ -285,12 +361,8 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 			keyStates['s'] = false;
 			moving = false;
 			break;
-		/* TODO sedi */
 		case 'e':
 		case 'E':
-			break;
-		case 'p':
-		case 'P':
 			/* spusti stolicu */
 			//printf("%d\n", carried);
 			/* update xpos zpos yangle stolice u odnosu na studenta */	
@@ -433,69 +505,153 @@ void drawAxes(){
 };
 
 void drawWalls(){
-	/* zadnji zid */
-	glColor3f(0.2, 1, 0.2);
+	/* tabla */
+	glBindTexture(GL_TEXTURE_2D, names[2]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
+		glNormal3f(-1, 0, 0);
+
+		glTexCoord2f(0, 0);
+		glVertex3f(1.99, 0.6, -1.9);
+
+		glTexCoord2f(1, 0);
+		glVertex3f(1.99, 0.6, 1.9);
+
+		glTexCoord2f(1, 1);
+		glVertex3f(1.99, 1.8, 1.9);
+
+		glTexCoord2f(0, 1);
+		glVertex3f(1.99, 1.8, -1.9);
+	glEnd();
+	/* zadnji zid */
+	glBindTexture(GL_TEXTURE_2D, names[0]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_POLYGON);
+		glNormal3f(1, 0, 0);
+
+		glTexCoord2f(0, 0);
 		glVertex3f(-3, 0, 2);
+		
+		glTexCoord2f(2, 0);
 		glVertex3f(-3, 0, -2);
+		
+		glTexCoord2f(2, 3);
 		glVertex3f(-3, 2, -2);
+		
+		glTexCoord2f(0, 3);
 		glVertex3f(-3, 2, 2);
 	glEnd();
 	/* levi zid */
-	glColor3f(0.3, 0.3, 0.3);
+	glBindTexture(GL_TEXTURE_2D, names[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
+		glNormal3f(0, 0, 1);
+
+		glTexCoord2f(0, 0);
 		glVertex3f(-3, 0, -2);
+
+		glTexCoord2f(2.5, 0);
 		glVertex3f(2, 0, -2);
+
+		glTexCoord2f(2.5, 3);
 		glVertex3f(2, 2, -2);
+
+		glTexCoord2f(0, 3);
 		glVertex3f(-3, 2, -2);
 	glEnd();
 	/* prednji zid */
-	glColor3f(0.4, 0.4, 0.4);
+	glBindTexture(GL_TEXTURE_2D, names[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
+		glNormal3f(-1, 0, 0);
+
+		glTexCoord2f(0, 0);
 		glVertex3f(2, 0, -2);
-		glVertex3f(2, 2, -2);
-		glVertex3f(2, 2, 2);
+
+		glTexCoord2f(2, 0);
 		glVertex3f(2, 0, 2);
+
+		glTexCoord2f(2, 3);
+		glVertex3f(2, 2, 2);
+
+		glTexCoord2f(0, 3);
+		glVertex3f(2, 2, -2);
 	glEnd();
 	/* desni zid */
-	glColor3f(0.1, 0.1, 0.1);
+	glBindTexture(GL_TEXTURE_2D, names[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
+		glNormal3f(0, 0, -1);
+
+		glTexCoord2f(0, 0);
 		glVertex3f(-3, 0, 2);
+
+		glTexCoord2f(1.875, 0);
 		glVertex3f(0.75, 0, 2);
+
+		glTexCoord2f(1.875, 3);
 		glVertex3f(0.75, 2, 2);
+
+		glTexCoord2f(0, 3);
 		glVertex3f(-3, 2, 2);
 	glEnd();
 	/* mali zid do vrata */
-	glColor3f(0.5, 0.5, 0.5);
+	glBindTexture(GL_TEXTURE_2D, names[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
+		glNormal3f(0, 0, -1);
+
+		glTexCoord2f(0, 0);
 		glVertex3f(1.5, 0, 2);
+		
+		glTexCoord2f(0.25, 0);
 		glVertex3f(2, 0, 2);
+
+		glTexCoord2f(0.25, 3);
 		glVertex3f(2, 2, 2);
+
+		glTexCoord2f(0, 3);
 		glVertex3f(1.5, 2, 2);
 	glEnd();
 	/* mali zid iznad vrata */
-	glColor3f(0.0, 0.0, 0.0);
+	glBindTexture(GL_TEXTURE_2D, names[0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
-		glVertex3f(0.75, 1.5, 2);
+		glNormal3f(0, 0, -1);
+
+		glTexCoord2f(0.375, 0);
 		glVertex3f(1.5, 1.5, 2);
-		glVertex3f(1.5, 2, 2);
+
+		glTexCoord2f(0, 0);
+		glVertex3f(0.75, 1.5, 2);
+
+		glTexCoord2f(0, 0.75);
 		glVertex3f(0.75, 2, 2);
+
+		glTexCoord2f(0.375, 0.75);
+		glVertex3f(1.5, 2, 2);
 	glEnd();
 	/* pod */
-	glColor3f(1, 1, 1);
+	glBindTexture(GL_TEXTURE_2D, names[1]);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
-            glVertex3f(5, 0, -5);
-            glVertex3f(-5, 0, -5);
-            glVertex3f(-5, 0, 5);
-            glVertex3f(5, 0, 5);
+		glNormal3f(0, 1, 0);
+
+		glTexCoord2f(0, 0);
+		glVertex3f(-3, 0, 2);
+
+		glTexCoord2f(4, 0);
+		glVertex3f(2, 0, 2);
+
+		glTexCoord2f(4, 3);
+		glVertex3f(2, 0, -2);
+
+		glTexCoord2f(0, 3);
+		glVertex3f(-3, 0, -2);
     glEnd();
+
+	/* iskljucujemo aktivnu teksturu */
+	glBindTexture(GL_TEXTURE_2D, 0);
 	
 }
 
