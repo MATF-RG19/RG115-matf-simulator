@@ -70,7 +70,7 @@ static void initTex(){
     image = image_init(0, 0);
 
 	/* Generisu se identifikatori tekstura. */
-	glGenTextures(2, names);
+	glGenTextures(3, names);
     /* Kreira se prva tekstura. */
 
     image_read(image, FILENAME0);
@@ -445,9 +445,9 @@ void drawMovedChairs(){
 				glPushMatrix();
 					glTranslatef(stolice[i].xPos, 0, stolice[i].zPos);
 					glRotatef(stolice[i].yAngle, 0, 1, 0);
-					//glDisable(GL_LIGHTING);
+					glDisable(GL_LIGHTING);
 					glCallList(listaStolica);
-					//glEnable(GL_LIGHTING);
+					glEnable(GL_LIGHTING);
 				glPopMatrix();
 			}
 		}
@@ -464,7 +464,7 @@ void drawChairs(){
 		for(j = 0; j < 3; j++){
 			glTranslatef(-1, 0, 0);
 			xS -= 1;
-			//glDisable(GL_LIGHTING);
+			glDisable(GL_LIGHTING);
 			for(i = 0; i < 6; i++){
 				idStolice = i + j * 6;
 				
@@ -480,7 +480,7 @@ void drawChairs(){
 			}
 			glTranslatef(0, 0, -2.4);
 			zS -= 2.4;
-			//glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHTING);
 		}
 	glPopMatrix();
 }
