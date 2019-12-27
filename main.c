@@ -133,6 +133,7 @@ int main(int argc, char **argv){
 	glutInitWindowSize(1280, 720);
 	glutInitWindowPosition(150, 100);
 	glutCreateWindow("MATF Simulator");
+	glutFullScreen();
 
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -156,35 +157,85 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-static void on_move(int value){
-	if(value != TIMER_ID_MOV)
-		return;
-	if(limbAngle > limbMaxAngle || limbAngle < -limbMaxAngle)
-		limbSign = -limbSign;
+static void on_timer(int value){
+	if(value == TIMER_ID_MOV){
+	
+		if(limbAngle > limbMaxAngle || limbAngle < -limbMaxAngle)
+			limbSign = -limbSign;
 
-	limbAngle += limbSign*limbSpeed; 
+		limbAngle += limbSign*limbSpeed; 
 
-	if(keyStates['w']){
-		//printf("on move w\n");
-		/* necemo da nam brzina kretanja zavisi od y ose*/
-		xzlen = sqrt(kz*kz+kx*kx);
-		camPosX += kx/xzlen*moveSens;
-		camPosZ += kz/xzlen*moveSens;
-		camPosY += limbAngle*bobSens;
+		if(keyStates['w']){
+			//printf("on move w\n");
+			/* necemo da nam brzina kretanja zavisi od y ose*/
+			xzlen = sqrt(kz*kz+kx*kx);
+			camPosX += kx/xzlen*moveSens;
+			camPosZ += kz/xzlen*moveSens;
+			camPosY += limbAngle*bobSens;
+		}
+
+		if(keyStates['s']){
+			//printf("on move s\n");
+			xzlen = sqrt(kz*kz+kx*kx);
+			camPosX -= kx/xzlen*moveSens;
+			camPosZ -= kz/xzlen*moveSens;
+			camPosY += limbAngle*bobSens;
+		}
+
+		glutPostRedisplay();
+
+		if(moving)
+			glutTimerFunc(30, on_timer, TIMER_ID_MOV);
 	}
 
-	if(keyStates['s']){
-		//printf("on move s\n");
-		xzlen = sqrt(kz*kz+kx*kx);
-		camPosX -= kx/xzlen*moveSens;
-		camPosZ -= kz/xzlen*moveSens;
-		camPosY += limbAngle*bobSens;
+	if(value == TIMER_ID_THROW){
+		throwAnim += throwAnimSpeed;
+		glutPostRedisplay();
+		if(throwAnim < throwAnimMax){
+			glutTimerFunc(30, on_timer, TIMER_ID_THROW);
+		}else{
+			throwAnim = 0;
+			throwing = false;
+			glutTimerFunc(30, on_timer, TIMER_ID_CHAIR);
+		}
+		glutPostRedisplay();
 	}
 
-	glutPostRedisplay();
+	if(value == TIMER_ID_CHAIR){
 
-	if(moving)
-		glutTimerFunc(30, on_move, value);
+	}
+
+	if(value == TIMER_ID_TURND){
+		yAngle += adSens;
+
+		if(yAngle > 360.0){
+			yAngle -= 360.0;
+		}
+		
+		kx = cos(pi/180.0*yAngle)*sin(pi/180.0*xAngle);
+		kz = sin(pi/180.0*yAngle)*sin(pi/180.0*xAngle);    
+		
+		glutPostRedisplay();
+		if(turning)
+		glutTimerFunc(30, on_timer, TIMER_ID_TURND);
+	}
+	
+	if(value == TIMER_ID_TURNA){
+		yAngle -= adSens;
+
+		if(yAngle < -360.0){
+			yAngle += 360.0;
+		}
+
+		kx = cos(pi/180.0*yAngle)*sin(pi/180.0*xAngle);
+		kz = sin(pi/180.0*yAngle)*sin(pi/180.0*xAngle);    
+		
+		glutPostRedisplay();
+		if(turning)
+			glutTimerFunc(30, on_timer, TIMER_ID_TURNA);
+	}
+
+	return;
 }
 
 /* TODO */
@@ -288,7 +339,7 @@ static void on_keyboard(unsigned char key, int x, int y){
 			keyStates['w'] = true;
 			if(!moving){
 				moving = true;
-				glutTimerFunc(30, on_move, TIMER_ID_MOV);
+				glutTimerFunc(30, on_timer, TIMER_ID_MOV);
 			}
 			break;
 		
@@ -298,7 +349,7 @@ static void on_keyboard(unsigned char key, int x, int y){
 			keyStates['s'] = true;
 			if(!moving){
 				moving = true;
-				glutTimerFunc(30, on_move, TIMER_ID_MOV);
+				glutTimerFunc(30, on_timer, TIMER_ID_MOV);
 			}
 			break;
 		case 'e':
@@ -332,9 +383,38 @@ static void on_keyboard(unsigned char key, int x, int y){
 			}
 			glutPostRedisplay();
 			break;
+		case 'Q':
+		case 'q':
+			if(carrying){
+				if(!throwing){
+					carrying = false;
+					throwing = true;
+					glutTimerFunc(30, on_timer, TIMER_ID_THROW);
+				}
+			}
+			glutPostRedisplay();
+			break;
+		
 		/* TODO sedi */
 		case 'x':
 		case 'X':
+			break;
+
+		case 'd':
+		case 'D':
+			keyStates['d'] = true;
+			if(!turning){
+				turning = true;
+				glutTimerFunc(30, on_timer, TIMER_ID_TURND);
+			}
+			break;
+		case 'a':
+		case 'A':
+			keyStates['a'] = true;
+			if(!turning){
+				turning = true;
+				glutTimerFunc(30, on_timer, TIMER_ID_TURNA);
+			}
 			break;
 		default:
 			break;
@@ -350,7 +430,7 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 			//printf("key up w\n");
 			keyStates['w'] = false;
 			/* ovo se ne izvrsava kada bi trebalo */
-			/* on_move se izvrsi jednom posle pustanja w */
+			/* on_timer se izvrsi jednom posle pustanja w */
 			/* reseno u drawStudent funkciji */
 			//limbAngle = 0;
 			moving = false;
@@ -380,6 +460,16 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 				carried = -1;
 				glutPostRedisplay();
 			}
+			break;
+		case 'd':
+		case 'D':
+			keyStates['d'] = false;
+			turning = false;
+			break;
+		case 'a':
+		case 'A':
+			keyStates['a'] = false;
+			turning = false;
 			break;
 		default:
 			break;
@@ -418,9 +508,11 @@ static void on_display(void){
 
 	glEnable(GL_COLOR_MATERIAL);
 
-	drawAxes();
+	//drawAxes();
 	drawWalls();
+	glDisable(GL_LIGHTING);
 	drawStudent();
+	glEnable(GL_LIGHTING);
 	drawChairs();
 	drawMovedChairs();
 
@@ -443,11 +535,14 @@ void drawMovedChairs(){
 		if(stolice[i].moved){
 			if(!stolice[i].isCarried){
 				glPushMatrix();
-					glTranslatef(stolice[i].xPos, 0, stolice[i].zPos);
+					glTranslatef(stolice[i].xPos, stolice[i].yPos, stolice[i].zPos);
 					glRotatef(stolice[i].yAngle, 0, 1, 0);
-					glDisable(GL_LIGHTING);
-					glCallList(listaStolica);
-					glEnable(GL_LIGHTING);
+					glPushMatrix();
+						glRotatef(stolice[i].xAngle, 1, 0, 0);
+						glDisable(GL_LIGHTING);
+						glCallList(listaStolica);
+						glEnable(GL_LIGHTING);
+					glPopMatrix();
 				glPopMatrix();
 			}
 		}
@@ -653,6 +748,20 @@ void drawWalls(){
 	/* iskljucujemo aktivnu teksturu */
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
+	/* plafon */
+	glColor3f(1, 1, 1);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_POLYGON);
+		glNormal3f(0, 1, 0);
+
+		glVertex3f(2, 2, 2);
+
+		glVertex3f(2, 2, -2);
+
+		glVertex3f(-3, 2, -2);
+
+		glVertex3f(-3, 2, 2);
+	glEnd();
 }
 
 void drawCrosshair(){
@@ -715,7 +824,52 @@ void drawStudent(){
 				glCallList(listaStolica);
 				//glEnable(GL_LIGHTING);
 			glPopMatrix();
-			}else{
+		}else if(throwing){
+			glPushMatrix();
+
+				/* desna ruka */
+				glPushMatrix();
+					glColor3f(0.3, 0.3, 0.3);
+					glTranslatef(-0.1, 0.95, 0.1);
+					glRotatef(60 + throwAnim*throwArmAngleMax/throwAnimMax, 0, 0, 1);
+					glTranslatef(0, -0.2, 0);
+					glScalef(0.05, 0.4, 0.05);
+					glutSolidCube(1);
+				glPopMatrix();
+				/* leva ruka */
+				glPushMatrix();
+					glColor3f(0.3, 0.3, 0.3);
+					glTranslatef(-0.1, 0.95, -0.1);
+					glRotatef(60 + throwAnim*throwArmAngleMax/throwAnimMax, 0, 0, 1);
+					glTranslatef(0, -0.2, 0);
+					glScalef(0.05, 0.4, 0.05);
+					glutSolidCube(1);
+				glPopMatrix();
+				glPushMatrix();
+					xzlen = sqrt(kz*kz+kx*kx);
+					/* bacanje po x i z */
+					stolice[carried].xPos = camPosX + abs(xAngle-180)*(kx/xzlen)*throwAnim/10000;
+					stolice[carried].zPos = camPosZ + abs(xAngle-180)*(kz/xzlen)*throwAnim/10000;
+					/* not good */
+					stolice[carried].xAngle = throwAnim*3*360/throwAnimMax;
+					stolice[carried].yAngle = -yAngle;
+					stolice[carried].isCarried = false;
+					stolice[carried].isInAir = true;
+					//movedChairs[brMoved-1] = &stolice[carried];
+					//printf("%f, %f, %f \n", stolice[carried].xPos, stolice[carried].zPos, stolice[carried].yAngle);
+					//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
+					carrying = false;
+					//carried = -1;
+					glutPostRedisplay();
+					//glTranslatef(0, -0.5, 0);
+					//glRotatef(throwAnim*throwArmAngleMax/throwAnimMax, 0, 0, 1);
+					//glTranslatef(0.25, 0.83, 0);
+					//glDisable(GL_LIGHTING);
+					//glCallList(listaStolica);
+					//glEnable(GL_LIGHTING);
+				glPopMatrix();
+			glPopMatrix();
+		}else{
 			/* desna ruka */
 			glPushMatrix();
 				glColor3f(0.3, 0.3, 0.3);

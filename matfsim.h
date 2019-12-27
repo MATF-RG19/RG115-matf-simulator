@@ -4,6 +4,10 @@
 #define pi 3.141592653589793
 #define MAX_STOLICA 18
 #define TIMER_ID_MOV 0
+#define TIMER_ID_THROW 1
+#define TIMER_ID_CHAIR 2
+#define TIMER_ID_TURNA 3
+#define TIMER_ID_TURND 4
 
 /* imena fajlova sa teksturama */
 #define FILENAME0 "wall.bmp"
@@ -38,6 +42,11 @@ static float xzlen = 0;
 static float xAngle = 90;
 static float yAngle = 0;
 
+static float throwAnim = 0;
+static float throwAnimSpeed = 15;
+static float throwAnimMax = 100;
+static float throwArmAngleMax = 30;
+
 static float limbAngle = 0;
 static float limbSpeed = 6;
 static float limbMaxAngle = 40;
@@ -47,6 +56,7 @@ static bool keyStates[256] = {0};
 static float moveSens = 0.06;
 static float mouseSens = 0.8;
 static float bobSens = 0.0001;
+static float adSens = 3;
 
 static void initTex();
 static void initStolice();
@@ -55,7 +65,7 @@ static void on_display(void);
 static void on_keyboard(unsigned char key, int x, int y);
 static void on_keyboard_up(unsigned char key, int x, int y);
 static void on_reshape(int width, int height);
-static void on_move(int value);
+static void on_timer(int value);
 static void on_mouse_motion(int x, int y);
 static void on_mouse(int button, int state, int x, int y);
 
@@ -71,7 +81,9 @@ static float dovoljnaBlizina = 0.3;
 static float dovoljniUgao = pi/8;
 
 bool moving = false;
-bool carrying = false; 
+bool carrying = false;
+bool throwing = false;
+bool turning = false;
 
 int brMoved = 0;
 int idStolice;
@@ -81,13 +93,15 @@ float rastojanje, ugao, sx, sz, smsx, smsz;
 float kolikoIspredDaSpusti = 0.15;
 
 typedef struct Stolica{
-	float yAngle, xPos, zPos;	
+	float xAngle, yAngle, xPos, zPos, yPos;	
 	bool moved;
 	bool isCarried;
+	bool isInAir;
+
 }Stolica;
 
 Stolica stolice[MAX_STOLICA];
-Stolica* movedChairs[MAX_STOLICA];
+//Stolica* movedChairs[MAX_STOLICA];
 /* ----------------------------------- */
 
 /* Bitmapa */

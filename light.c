@@ -7,7 +7,7 @@ void initLights()
     GLfloat light_position[] = { 1.5, 1.5, 1.5, 0 };
 
     /* Ambijentalna boja svetla. */
-    GLfloat light_ambient[] = { 0.2, 0.2, 0.2, 1 };
+    GLfloat light_ambient[] = { 0.4, 0.4, 0.4, 1 };
 
     /* Difuzna boja svetla. */
     GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
