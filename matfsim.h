@@ -43,9 +43,12 @@ static float xAngle = 90;
 static float yAngle = 0;
 
 static float throwAnim = 0;
-static float throwAnimSpeed = 15;
+static float throwAnimSpeed = 0.1;
 static float throwAnimMax = 100;
-static float throwArmAngleMax = 30;
+//static float throwArmAngleMax = 30;
+static float throwDist = 0.0003;
+static float throwXAngle = 0;
+static float throwKX, throwKZ;
 
 static float limbAngle = 0;
 static float limbSpeed = 6;
@@ -90,10 +93,10 @@ int idStolice;
 float xS, zS;
 int carried = -1;
 float rastojanje, ugao, sx, sz, smsx, smsz;
-float kolikoIspredDaSpusti = 0.15;
+float kolikoIspredDaSpusti = 0.18;
 
 typedef struct Stolica{
-	float xAngle, yAngle, xPos, zPos, yPos;	
+	float zAngle, yAngle, xPos, zPos, yPos;	
 	bool moved;
 	bool isCarried;
 	bool isInAir;
@@ -101,7 +104,7 @@ typedef struct Stolica{
 }Stolica;
 
 Stolica stolice[MAX_STOLICA];
-//Stolica* movedChairs[MAX_STOLICA];
+Stolica* st;
 /* ----------------------------------- */
 
 /* Bitmapa */
