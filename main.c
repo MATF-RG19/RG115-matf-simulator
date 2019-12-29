@@ -445,6 +445,7 @@ static void on_keyboard(unsigned char key, int x, int y){
 						stolice[i].isCarried = true;
 						carried = i;
 						carrying = true;
+						break;
 					}
 				}
 			}
