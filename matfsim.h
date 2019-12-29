@@ -42,13 +42,6 @@ static float xzlen = 0;
 static float xAngle = 90;
 static float yAngle = 0;
 
-static float throwAnim = 0;
-static float throwAnimSpeed = 0.1;
-static float throwAnimMax = 100;
-//static float throwArmAngleMax = 30;
-static float throwDist = 0.0003;
-static float throwXAngle = 0;
-static float throwKX, throwKZ;
 
 static float limbAngle = 0;
 static float limbSpeed = 6;
@@ -88,6 +81,16 @@ bool carrying = false;
 bool throwing = false;
 bool turning = false;
 
+static float throwAnim = 0;
+static float throwAnimSpeed = 4;
+static float chairAnimSpeed = 0.1;
+static float throwAnimMax = 100;
+static float throwArmAngleMax = 30;
+static float throwDist = 1;
+static float throwXAngle = 0;
+static float throwYAngle = 0;
+static float throwKX, throwKZ;
+
 int brMoved = 0;
 int idStolice;
 float xS, zS;
@@ -104,6 +107,7 @@ typedef struct Stolica{
 }Stolica;
 
 Stolica stolice[MAX_STOLICA];
+/* ptr na stolicu koja se baca */
 Stolica* st;
 /* ----------------------------------- */
 

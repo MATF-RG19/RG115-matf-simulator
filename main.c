@@ -17,36 +17,36 @@ static void initStolice(){
 		glPushMatrix();
 			/* 4 noge */
 			glPushMatrix();
-				glTranslatef(-0.074, 0.25, -0.074);
+				glTranslatef(-0.074, 0, -0.074);
 				glScalef(0.02, 0.5, 0.02);
 				glutSolidCube(1);
 			glPopMatrix();
 			glPushMatrix();
-				glTranslatef(0.074, 0.125, -0.074);
+				glTranslatef(0.074, -0.125, -0.074);
 				glScalef(0.02, 0.25, 0.02);
 				glutSolidCube(1);
 			glPopMatrix();
 			glPushMatrix();
-				glTranslatef(0.074, 0.125, 0.074);
+				glTranslatef(0.074, -0.125, 0.074);
 				glScalef(0.02, 0.25, 0.02);
 				glutSolidCube(1);
 			glPopMatrix();
 			glPushMatrix();
-				glTranslatef(-0.074, 0.25, 0.074);
+				glTranslatef(-0.074, 0, 0.074);
 				glScalef(0.02, 0.5, 0.02);
 				glutSolidCube(1);
 			glPopMatrix();
 			/* whtevs */
 			glPushMatrix();
 				glColor3f(0.4, 0.15, 0.1);
-				glTranslatef(0, 0.251, 0);
+				glTranslatef(0, 0.001, 0);
 				glScalef(0.17, 0.01, 0.17);
 				glutSolidCube(1);
 			glPopMatrix();
 			/* naslon */
 			glPushMatrix();
 				glColor3f(0.4, 0.15, 0.1);
-				glTranslatef(-0.065, 0.4125, 0);
+				glTranslatef(-0.065, 0.1625, 0);
 				glScalef(0.01, 0.125, 0.17);
 				glutSolidCube(1);
 			glPopMatrix();
@@ -189,9 +189,9 @@ static void on_timer(int value){
 	}
 
 	if(value == TIMER_ID_THROW){
-		throwAnim += throwAnimSpeed*throwXAngle*(cos(throwXAngle*pi/180)+2);
+		throwAnim += throwAnimSpeed;
 		glutPostRedisplay();
-		if(throwAnim < throwXAngle){
+		if(throwAnim < throwArmAngleMax){
 			glutTimerFunc(30, on_timer, TIMER_ID_THROW);
 		}else{
 			throwAnim = 0;
@@ -199,31 +199,63 @@ static void on_timer(int value){
 			carrying = false;
 			st->isCarried = false;
 			st->isInAir = true;
-		//	st->xPos = 0.085 - 0.1 + camPosX;
-		//	st->yPos = 
-
+			/* kancer koji nije probom, mozda zatreba tho */
+			//st->xPos = camPosX - 0.1 + cos(-yAngle)* 0.7232 + sin(-yAngle);
+			//st->zPos = camPosZ - sin(-yAngle) * 0.7232 + cos(-yAngle);
+			xzlen = sqrt(kz*kz+kx*kx);
+			/* sve probom uradjeno jadno */
+			st->xPos = camPosX + kx/xzlen*(kolikoIspredDaSpusti+0.37);
+			st->zPos = camPosZ + kz/xzlen*(kolikoIspredDaSpusti+0.37);
+			/* calculato */
+			st->yPos = 0.5336;
+			st->zAngle = 60;
+			st->yAngle = -yAngle;
+			throwKZ = kz;
+			throwKX = kx;
+			
 			glutTimerFunc(30, on_timer, TIMER_ID_CHAIR);
 		}
 		glutPostRedisplay();
 	}
 
 	if(value == TIMER_ID_CHAIR){
-		/*  */
-		if(st->yPos > 0.25){
-			//throwAnim += throwAnimSpeed*throwXAngle*(cos(throwXAngle*pi/180)+2);
+		if(st->yPos > 0.1){
+			throwAnim += chairAnimSpeed;
 			xzlen = sqrt(throwKZ*throwKZ+throwKX*throwKX);
 			/* bacanje po x i z */
-			st->xPos = camPosX + throwXAngle*(throwKX/xzlen)*throwAnim*throwDist;
-			st->zPos = camPosZ + throwXAngle*(throwKZ/xzlen)*throwAnim*throwDist;
-			//st->yPos = sin(pi*throwAnim/throwAnimMax)+throwXAngle/90;
-			st->yPos = 0.33 + sin((throwXAngle-90)*pi/180) - throwAnim/100;
-			st->zAngle += throwAnimSpeed*throwXAngle;
-			st->yAngle = -yAngle;
+			if(st->xPos < 1.8 && st->xPos > -2.8 && st->zPos < 1.8 && st->zPos > -1.8){
+				st->xPos += (throwKX/xzlen)*throwDist/throwXAngle;
+				st->zPos += (throwKZ/xzlen)*throwDist/throwXAngle;
+				st->zAngle += 23*throwXAngle/100;
+			}
+			st->zAngle -= 5;
 			
+			/* bacanje po y */
+			st->yPos = 0.5336 + sin(throwAnim)*(throwXAngle/100) - throwAnim/5;
+			if(st->zAngle > 360) st->zAngle -= 360;
+			//printf("%f\n", st->zAngle);
 			glutPostRedisplay();
-			glutTimerFunc(30, on_timer, TIMER_ID_CHAIR);
+			glutTimerFunc(10, on_timer, TIMER_ID_CHAIR);
 		}else{
+			//printf("---------\n");
+			/* kolizija stolica - zid */
+			if(st->zAngle > 330 || (st->zAngle < 30 && st->zAngle > -30)){
+				st->zAngle = 0;
+				st->yPos = 0;
+			}else if(st->zAngle > 30 && st->zAngle < 180){
+				st->zAngle = 90;
+				st->yPos = -0.165;
+			}else if(st->zAngle > 180 && st->zAngle < 250){
+				st->zAngle = 245;
+				st->yPos = -0.17;
+			}else{
+				st->zAngle = 270;
+				st->yPos = -0.165;
+			}
+			//printf(">>> %f\n", st->yPos);
 			st->isInAir = false;
+			throwAnim = 0;
+			glutPostRedisplay();
 		}
 	}
 
@@ -274,8 +306,8 @@ static void on_timer(int value){
 	return;
 }
 
-/* TODO */
-/* ne moze da se pomera kursor dok je pritisnuto dugme */
+/* ne moze da se pomera kursor dok je pritisnuto dugme problem */
+/* ovo je isto kao btn e */
 static void on_mouse(int button, int state, int x, int y){
 	GLuint i;
 	switch (button)	{
@@ -425,8 +457,8 @@ static void on_keyboard(unsigned char key, int x, int y){
 					//carrying = false;
 					throwing = true;
 					throwXAngle = abs(xAngle - 180);
-					if(throwXAngle < 50) throwXAngle = 50;
-					if(throwXAngle > 110) throwXAngle = 110;
+					if(throwXAngle < 30) throwXAngle = 30;
+					if(throwXAngle > 175) throwXAngle = 175;
 					throwKX = kx;
 					throwKZ = kz;
 					st = &stolice[carried];
@@ -492,6 +524,8 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 				xzlen = sqrt(kz*kz+kx*kx);
 				stolice[carried].xPos = camPosX + kx/xzlen*kolikoIspredDaSpusti;
 				stolice[carried].zPos = camPosZ + kz/xzlen*kolikoIspredDaSpusti;
+				stolice[carried].yPos = 0;
+				stolice[carried].zAngle = 0;
 				stolice[carried].yAngle = -yAngle;
 				stolice[carried].isCarried = false;
 				//movedChairs[brMoved-1] = &stolice[carried];
@@ -574,12 +608,13 @@ void drawMovedChairs(){
 		//printf("%f, %f, %f \n", movedChairs[i].xPos, movedChairs[i].zPos, movedChairs[i].yAngle);
 		//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
 		if(stolice[i].moved){
-			if(!stolice[i].isCarried && !stolice[i].isInAir){
+			if(!stolice[i].isCarried){
 				glPushMatrix();
 					glTranslatef(stolice[i].xPos, stolice[i].yPos, stolice[i].zPos);
-					glRotatef(stolice[i].yAngle, 0, 1, 0);
 					glPushMatrix();
-						glRotatef(stolice[i].zAngle*pi/180, 0, 0, 1);
+						glRotatef(stolice[i].yAngle, 0, 1, 0);
+						glTranslatef(0, 0.25, 0);
+						glRotatef(stolice[i].zAngle, 0, 0, 1);
 						glDisable(GL_LIGHTING);
 						glCallList(listaStolica);
 						glEnable(GL_LIGHTING);
@@ -594,7 +629,7 @@ void drawChairs(){
 	/* inicijalizujemo structs dok crtamo */
 	GLuint i, j;
 	glPushMatrix();
-		glTranslatef(1.5, 0, -1.5);
+		glTranslatef(1.5, 0.25, -1.5);
 		xS = 1.5;
 		zS = -1.5;
 		for(j = 0; j < 3; j++){
@@ -604,7 +639,7 @@ void drawChairs(){
 			for(i = 0; i < 6; i++){
 				idStolice = i + j * 6;
 				
-				if(!stolice[idStolice].moved){
+				if(!stolice[idStolice].moved){	
 					glCallList(listaStolica);
 					/* ovo se posle prvog puta izvrsava bez potrebe ali ok */
 					stolice[idStolice].xPos = xS;
@@ -848,7 +883,7 @@ void drawStudent(){
 				glPushMatrix();
 					glColor3f(0.3, 0.3, 0.3);
 					glTranslatef(0, 0.95, 0.1);
-					glRotatef(60 + throwAnim*(throwXAngle/300), 0, 0, 1);
+					glRotatef(60 + throwAnim, 0, 0, 1);
 					glTranslatef(0, -0.2, 0);
 					glScalef(0.05, 0.4, 0.05);
 					glutSolidCube(1);
@@ -857,17 +892,17 @@ void drawStudent(){
 				glPushMatrix();
 					glColor3f(0.3, 0.3, 0.3);
 					glTranslatef(0, 0.95, -0.1);
-					glRotatef(60 + throwAnim*(throwXAngle/300), 0, 0, 1);
+					glRotatef(60 + throwAnim, 0, 0, 1);
 					glTranslatef(0, -0.2, 0);
 					glScalef(0.05, 0.4, 0.05);
 					glutSolidCube(1);
 				glPopMatrix();
 				glPushMatrix();
 					glTranslatef(0, 0.95, 0);
-					glRotatef(60 + throwAnim*(throwXAngle/300), 0, 0, 1);
+					glRotatef(60 + throwAnim, 0, 0, 1);
 					glTranslatef(0, -0.35, 0);
-					glRotatef(-60 + throwAnim*(throwXAngle/300), 0, 0, 1);
-					glTranslatef(0.085, -0.48, 0);
+					glRotatef(-60 + throwAnim, 0, 0, 1);
+					glTranslatef(0.085, -0.23, 0);
 					glCallList(listaStolica);
 				glPopMatrix();
 			glPopMatrix();
@@ -892,7 +927,7 @@ void drawStudent(){
 			glPopMatrix();
 			glPushMatrix();
 				//glTranslatef(0.25, 0.33, 0);
-				glTranslatef(0, 0.95, 0);
+				glTranslatef(0, 1.2, 0);
 				glRotatef(60, 0, 0, 1);
 				glTranslatef(0, -0.35, 0);
 				glPushMatrix();
