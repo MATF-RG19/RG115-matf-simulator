@@ -36,7 +36,7 @@ static void initStolice(){
 				glScalef(0.02, 0.5, 0.02);
 				glutSolidCube(1);
 			glPopMatrix();
-			/* whtevs */
+			/* sediste / guzna daska */
 			glPushMatrix();
 				glColor3f(0.4, 0.15, 0.1);
 				glTranslatef(0, 0.001, 0);
@@ -187,7 +187,8 @@ static void on_timer(int value){
 		if(moving)
 			glutTimerFunc(30, on_timer, TIMER_ID_MOV);
 	}
-
+	/* animacija bacanja do trenutka pustanja stolice */
+	/* stolica se iscrtava u drawStudent funkciji */
 	if(value == TIMER_ID_THROW){
 		throwAnim += throwAnimSpeed;
 		glutPostRedisplay();
@@ -217,17 +218,18 @@ static void on_timer(int value){
 		}
 		glutPostRedisplay();
 	}
-
+	/* animacija bacanja posle pustanja stolice */
 	if(value == TIMER_ID_CHAIR){
 		if(st->yPos > 0.1){
 			throwAnim += chairAnimSpeed;
 			xzlen = sqrt(throwKZ*throwKZ+throwKX*throwKX);
-			/* bacanje po x i z */
+			/* kolizija, bacanje po x i z, rotacija*/
 			if(st->xPos < 1.8 && st->xPos > -2.8 && st->zPos < 1.8 && st->zPos > -1.8){
 				st->xPos += (throwKX/xzlen)*throwDist/throwXAngle;
 				st->zPos += (throwKZ/xzlen)*throwDist/throwXAngle;
 				st->zAngle += 23*throwXAngle/100;
 			}
+			/* ako stolica udari u zid promeni smer rotacije */
 			st->zAngle -= 5;
 			
 			/* bacanje po y */
@@ -238,7 +240,7 @@ static void on_timer(int value){
 			glutTimerFunc(10, on_timer, TIMER_ID_CHAIR);
 		}else{
 			//printf("---------\n");
-			/* kolizija stolica - zid */
+			/* postavljanje stolice u zavisnosti od toga kako je pala */
 			if(st->zAngle > 330 || (st->zAngle < 30 && st->zAngle > -30)){
 				st->zAngle = 0;
 				st->yPos = 0;
@@ -258,7 +260,7 @@ static void on_timer(int value){
 			glutPostRedisplay();
 		}
 	}
-
+	/* okretanje coveka na d */
 	if(value == TIMER_ID_TURND){
 		if(keyStates['s']){
 			yAngle -= adSens;
@@ -280,7 +282,7 @@ static void on_timer(int value){
 		if(turning)
 		glutTimerFunc(30, on_timer, TIMER_ID_TURND);
 	}
-	
+	/* okretanje coveka na a */
 	if(value == TIMER_ID_TURNA){
 		if(keyStates['s']){
 			yAngle += adSens;
@@ -428,20 +430,21 @@ static void on_keyboard(unsigned char key, int x, int y){
 				rastojanje = sqrt((sx-camPosX)*(sx-camPosX)+(sz-camPosZ)*(sz-camPosZ));
 				//printf("%d. %f\n", i, rastojanje);
 				
-				/* ako jeste namesti studenta da nosi ako ne nista */
+				/* da li je stolica dovoljno blizu */
 				if(rastojanje < dovoljnaBlizina){
-					/* plus provera da li je stolica ispred studenta
-					ugao izmedju kx+kz vektora kamere i pos stolice minus pos studenta   */
+					/* sms(x|z) - stolica minus student (X|Z) */
 					smsx = sx-camPosX;
 					smsz = sz-camPosZ;
+					/* ugao izmedju kx+kz vektora kamere i (pos stolice minus pos studenta) vektora */
 					ugao = acos((smsx*kx+smsz*kz)/(sqrt(kz*kz+kx*kx)*sqrt(smsx*smsx+smsz*smsz)));
-					//printf("%f %f\n", ugao, dovoljniUgao);
+					/* da li je stolica ispred */
 					if(ugao < dovoljniUgao){
-						/* ako stolica nije moved onda brMoved++ i stolica.moved = true */
+
 						if(!stolice[i].moved){
 							brMoved++;
 							stolice[i].moved = true;
 						}
+
 						stolice[i].isCarried = true;
 						carried = i;
 						carrying = true;
@@ -501,7 +504,6 @@ static void on_keyboard_up(unsigned char key, int x, int y){
     switch (key) {
 		case 'w':
 		case 'W':
-			//printf("key up w\n");
 			keyStates['w'] = false;
 			/* ovo se ne izvrsava kada bi trebalo */
 			/* on_timer se izvrsi jednom posle pustanja w */
@@ -518,7 +520,6 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 		case 'e':
 		case 'E':
 			/* spusti stolicu */
-			//printf("%d\n", carried);
 			/* update xpos zpos yangle stolice u odnosu na studenta */	
 			/* dodaj stolicu u movedChairs niz */
 			if(carrying){
@@ -529,9 +530,6 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 				stolice[carried].zAngle = 0;
 				stolice[carried].yAngle = -yAngle;
 				stolice[carried].isCarried = false;
-				//movedChairs[brMoved-1] = &stolice[carried];
-				//printf("%f, %f, %f \n", stolice[carried].xPos, stolice[carried].zPos, stolice[carried].yAngle);
-				//printf("%f %f %f\n", camPosX, camPosZ, yAngle);
 				carrying = false;
 				carried = -1;
 				glutPostRedisplay();
@@ -630,6 +628,7 @@ void drawChairs(){
 	/* inicijalizujemo structs dok crtamo */
 	GLuint i, j;
 	glPushMatrix();
+		/* stolica se iscrtava sa sedistem u nivou poda pa je transl po y za 0.25 */
 		glTranslatef(1.5, 0.25, -1.5);
 		xS = 1.5;
 		zS = -1.5;
@@ -899,10 +898,16 @@ void drawStudent(){
 					glutSolidCube(1);
 				glPopMatrix();
 				glPushMatrix();
+					/* + visina ramena */
 					glTranslatef(0, 0.95, 0);
+					/* rotiramo zajedno sa rukom */
 					glRotatef(60 + throwAnim, 0, 0, 1);
+					/* minus duzina ruke po y */
+					/* sad stolicu drze ruke cija su ramena na z osi */
 					glTranslatef(0, -0.35, 0);
+					/* rotiramo je da stoji lepo u saci */
 					glRotatef(-60 + throwAnim, 0, 0, 1);
+					/* pola sedista po x, -0.23 po y da mesto gde se drzi stolica dodje na z-osu */
 					glTranslatef(0.085, -0.23, 0);
 					glCallList(listaStolica);
 				glPopMatrix();
@@ -927,17 +932,15 @@ void drawStudent(){
 				glutSolidCube(1);
 			glPopMatrix();
 			glPushMatrix();
-				//glTranslatef(0.25, 0.33, 0);
-				glTranslatef(0, 1.2, 0);
+				/* transformacije iste kao za throw iznad samo bez anim */
+				glTranslatef(0, 0.95, 0);
 				glRotatef(60, 0, 0, 1);
 				glTranslatef(0, -0.35, 0);
-				glPushMatrix();
-					glRotatef(-60, 0, 0, 1);
-					glTranslatef(0.085, -0.48, 0);
-					//glDisable(GL_LIGHTING);
-					glCallList(listaStolica);
-					//glEnable(GL_LIGHTING);
-				glPopMatrix();
+				glRotatef(-60, 0, 0, 1);
+				glTranslatef(0.085, -0.23, 0);
+				//glDisable(GL_LIGHTING);
+				glCallList(listaStolica);
+				//glEnable(GL_LIGHTING);
 			glPopMatrix();
 		}else{
 			/* desna ruka */

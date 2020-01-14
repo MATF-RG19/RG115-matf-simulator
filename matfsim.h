@@ -84,18 +84,16 @@ bool turning = false;
 static float throwAnim = 0;
 static float throwAnimSpeed = 4;
 static float chairAnimSpeed = 0.1;
-static float throwAnimMax = 100;
 static float throwArmAngleMax = 30;
 static float throwDist = 1;
 static float throwXAngle = 0;
-static float throwYAngle = 0;
 static float throwKX, throwKZ;
 
 int brMoved = 0;
 int idStolice;
-float xS, zS;
+float xS, zS;  // pozicija stolice koja se koristi za inicijalizaciju struct u drawChairs
 int carried = -1;
-float rastojanje, ugao, sx, sz, smsx, smsz;
+float rastojanje, ugao, sx, sz, smsx, smsz; // vars za podizanje stolice
 float kolikoIspredDaSpusti = 0.18;
 
 typedef struct Stolica{
