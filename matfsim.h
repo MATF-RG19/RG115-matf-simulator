@@ -23,12 +23,6 @@ static float camPosX = 0.0;
 static float camPosY = 1.0;
 static float camPosZ = 0.0;
 
-/* not used
-static float camCenterX = 0.0;
-static float camCenterY = 0.0;
-static float camCenterZ = 0.0;
-*/
-
 static float camUpX = 0;
 static float camUpY = 1;
 static float camUpZ = 0;
@@ -73,6 +67,8 @@ void drawChairs();
 void drawMovedChairs();
 
 /* ---------- ZA STOLICE ------------ */
+GLuint listaStolica;
+
 static float dovoljnaBlizina = 0.3;
 static float dovoljniUgao = pi/8;
 
