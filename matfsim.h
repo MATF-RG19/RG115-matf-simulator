@@ -15,49 +15,48 @@
 #define FILENAME2 "tabla.bmp"
 
 /* identifikatori tekstura */
-static GLuint names[3];
+GLuint names[3];
 
-static int window_width, window_height;
+int window_width, window_height;
 
-static float camPosX = 0.0;
-static float camPosY = 1.0;
-static float camPosZ = 0.0;
+float camPosX = 0.0;
+float camPosY = 1.0;
+float camPosZ = 0.0;
 
-static float camUpX = 0;
-static float camUpY = 1;
-static float camUpZ = 0;
+float camUpX = 0;
+float camUpY = 1;
+float camUpZ = 0;
 
-static float kx = 1;
-static float ky = 0;
-static float kz = 0;
-static float xzlen = 0;
+float kx = 1;
+float ky = 0;
+float kz = 0;
+float xzlen = 0;
 
 // uglovi rotacije oko x i y ose
-static float xAngle = 90;
-static float yAngle = 0;
+float xAngle = 90;
+float yAngle = 0;
 
 
-static float limbAngle = 0;
-static float limbSpeed = 6;
-static float limbMaxAngle = 40;
-static int limbSign = 1;
+float limbAngle = 0;
+float limbSpeed = 6;
+float limbMaxAngle = 40;
+int limbSign = 1;
 
-static bool keyStates[256] = {0};
-static float moveSens = 0.06;
-static float mouseSens = 0.8;
-static float bobSens = 0.0001;
-static float adSens = 3;
+bool keyStates[256] = {0};
+float moveSens = 0.06;
+float mouseSens = 0.8;
+float bobSens = 0.0001;
+float adSens = 3;
 
-static void initTex();
-static void initStolice();
+void initTex();
+void initStolice();
 
-static void on_display(void);
-static void on_keyboard(unsigned char key, int x, int y);
-static void on_keyboard_up(unsigned char key, int x, int y);
-static void on_reshape(int width, int height);
-static void on_timer(int value);
-static void on_mouse_motion(int x, int y);
-static void on_mouse(int button, int state, int x, int y);
+void on_display(void);
+void on_keyboard(unsigned char key, int x, int y);
+void on_keyboard_up(unsigned char key, int x, int y);
+void on_reshape(int width, int height);
+void on_timer(int value);
+void on_mouse_motion(int x, int y);
 
 void drawAxes();
 void drawWalls();
@@ -69,21 +68,21 @@ void drawMovedChairs();
 /* ---------- ZA STOLICE ------------ */
 GLuint listaStolica;
 
-static float dovoljnaBlizina = 0.3;
-static float dovoljniUgao = pi/8;
+float dovoljnaBlizina = 0.3;
+float dovoljniUgao = pi/8;
 
 bool moving = false;
 bool carrying = false;
 bool throwing = false;
 bool turning = false;
 
-static float throwAnim = 0;
-static float throwAnimSpeed = 4;
-static float chairAnimSpeed = 0.1;
-static float throwArmAngleMax = 30;
-static float throwDist = 1;
-static float throwXAngle = 0;
-static float throwKX, throwKZ;
+float throwAnim = 0;
+float throwAnimSpeed = 4;
+float chairAnimSpeed = 0.1;
+float throwArmAngleMax = 30;
+float throwDist = 1;
+float throwXAngle = 0;
+float throwKX, throwKZ;
 
 int brMoved = 0;
 int idStolice;

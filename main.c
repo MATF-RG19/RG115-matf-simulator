@@ -24,7 +24,6 @@ int main(int argc, char **argv){
 	glutKeyboardUpFunc(on_keyboard_up);
 	glutReshapeFunc(on_reshape);
 	glutPassiveMotionFunc(on_mouse_motion);
-	glutMouseFunc(on_mouse);
 
 	initTex();
 	initStolice();
@@ -41,7 +40,7 @@ int main(int argc, char **argv){
 
 /* =========================== CALLBACK FUNCTIONS =========================== */
 
-static void on_display(void){
+void on_display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -74,7 +73,7 @@ static void on_display(void){
 	glutSwapBuffers();
 }
 
-static void on_timer(int value){
+void on_timer(int value){
 	/* animacija kretanja */
 	if(value == TIMER_ID_MOV){
 		
@@ -226,7 +225,7 @@ static void on_timer(int value){
 	return;
 }
 
-static void on_mouse_motion(int x, int y){
+void on_mouse_motion(int x, int y){
 	
 	/* menjamo uglove u zavisnosti od pozicije kursora */
 	x -= window_width/2;
@@ -257,7 +256,7 @@ static void on_mouse_motion(int x, int y){
 	glutPostRedisplay();
 }
 
-static void on_keyboard(unsigned char key, int x, int y){
+void on_keyboard(unsigned char key, int x, int y){
 	GLuint i;
     switch (key) {
     	case 27:
@@ -357,7 +356,7 @@ static void on_keyboard(unsigned char key, int x, int y){
 	glutPostRedisplay();
 }
 
-static void on_keyboard_up(unsigned char key, int x, int y){
+void on_keyboard_up(unsigned char key, int x, int y){
     switch (key) {
 
 		case 'w':
@@ -414,7 +413,7 @@ static void on_keyboard_up(unsigned char key, int x, int y){
 	glutPostRedisplay();
 }
 
-static void on_reshape(int width, int height){
+void on_reshape(int width, int height){
 	window_width = width;
 	window_height = height;
 
@@ -432,7 +431,7 @@ static void on_reshape(int width, int height){
 
 /* ============================ DRAW FUNCTIONS ============================ */
 
-static void initStolice(){
+void initStolice(){
 	listaStolica = glGenLists(1);
 
 	glNewList(listaStolica, GL_COMPILE);
@@ -864,7 +863,7 @@ void drawStudent(){
 	glPopMatrix();
 }
 
-static void initTex(){
+void initTex(){
 	/* Objekat koji predstavlja teskturu ucitanu iz fajla. */
     Image * image;
 
